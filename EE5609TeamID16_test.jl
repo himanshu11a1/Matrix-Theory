@@ -6,12 +6,13 @@ using JLD2
 for i in 1:25
     A = Samples[i].A 
     b = Samples[i].b
-    print("i=",i,size(A),":")
-    #print("i=",i,":")
+    #print("i=",i,size(A),":")
+    print("i=",i,":")
     
-    #@time U,r,consistent = rankconsistencyTeamID16(A,b)
-    U,r,consistent = rankconsistencyTeamID16(A,b)
-    
+    #U,r,consistent = rankconsistencyTeamID16(A,b)
+    @time U,r,consistent = rankconsistencyTeamID16(A,b)
+    #print(typeof(U),typeof(r),typeof(consistent))
+
     if(U == Samples[i].U)
         print("U==U,")
     else
@@ -27,4 +28,5 @@ for i in 1:25
     else
         print("consistent!=consistent\n")
     end
+   
 end

@@ -3,96 +3,76 @@
 #Team ID - 16
 #Team Members
 # 1) ANDRA SIVA SAI TEJA - AI22MTECH11001
-# 2) HIMANSHU SHARMA - AI22MTECH12008
+# 2) HIMANSHU - AI22MTECH12008
+ 
 
-#NOTE:
-# 1) This .jl file contains the function "rankconsistencyTeamID16" 
-#    that returns to ref,rank,consistency
-# 2) This file also contains some intermediatory functions
-#    those have been used in between 
-
-function rowSwap(M,i,j)
-    m,n = size(M)
-    max = M[i,j]
-    index = i
-    for k in i:m
-        if(M[k,j] > max)
-            max = M[k,j]
-            index = k
-        end
-    end
-    
-    if(max!=M[i,j])
-        row_index = M[index,:]
-        M[index,:] = M[i,:]
-        M[i,:] = row_index
-    end
-    return M
-end
-
-function multiplier(p,q)
-        temp = [1 2 3;3 1 2;2 3 1]
-        return temp[p,q]
-end
-
-function multiplyF4Vector(v1,mult,j)
-    v = v1*0
-    temp = [0 0 0 0;0 1 2 3;0 2 3 1;0 3 1 2]
-    for i in j:length(v1)
-        v[i] = temp[v1[i]+1,mult+1]
-    end
-    return v
-end
-
-function addF4Vectors(v1,v2,j)
-    v = v1*0
-    temp = [0 1 2 3;1 0 3 2;2 3 0 1;3 2 1 0]
-    for i in j:length(v1)
-        v[i] = temp[v1[i]+1,v2[i]+1]
-    end
-    return v
-end
-
-function makeZeroUsing(M,k,i,j)
+function makeZeroUsing(M,m,n,i,j,temp1,temp2,temp3)
     p = M[i,j] #pivot
-    q = M[k,j]
-    
-    if(q != 0)
-        mult = multiplier(p,q)
-        pivot_row = M[i,:]
-        below_row = M[k,:]
-        pivot_row_multiplied = multiplyF4Vector(pivot_row,mult,j)
-        M[k,:] = addF4Vectors(pivot_row_multiplied,below_row,j)
+    for k in i+1:m 
+        q = M[k,j]
+        if(q != 0)
+            for t in j:n+1
+                M[k,t] = temp3[temp2[M[i,t]+1,temp1[p, q]+1]+1,M[k,t]+1]
+            end
+        end
     end
     return M
 end
 
 function rankconsistencyTeamID16(A,b)
     #partial pivoting
+    A = convert(Array{Int8},A)
+    b = convert(Array{Int8},b)
     m,n = size(A)
-    A0 = [A b]
-    U0 = copy(A0)
+    U0 = [A b]
     i = 1
     j = 1
-    while((i<m)&&(j<=n+1))
-        U0 = rowSwap(U0,i,j)
+    temp1 = [1 2 3;3 1 2;2 3 1]
+    temp2 = [0 0 0 0;0 1 2 3;0 2 3 1;0 3 1 2]
+    temp3 = [0 1 2 3;1 0 3 2;2 3 0 1;3 2 1 0]
+    temp1 = convert(Array{Int8},temp1)
+    temp2 = convert(Array{Int8},temp2)
+    temp3 = convert(Array{Int8},temp3)
+    
+    while((i<=m-1)&&(j<=n+1))
+        if(U0[i,j]!=3)
+            max = U0[i,j]
+            index = i
+            for k in i:m
+                if(max == 3)
+                    break
+                end
+                if(U0[k,j] > max)
+                    max = U0[k,j]
+                    index = k
+                end
+            end
+            
+            if(max!=U0[i,j])
+                row_index = U0[index,:]
+                U0[index,:] = U0[i,:]
+                U0[i,:] = row_index
+            end
+        end
         if(U0[i,j]==0)
             j = j + 1
         else
-            for k in i+1:m 
-                U0 = makeZeroUsing(U0,k,i,j)
-            end
-                i = i + 1
-                j = j + 1
+            U0 = makeZeroUsing(U0,m,n,i,j,temp1,temp2,temp3)
+            i = i + 1
+            j = j + 1
         end
     end
-
+    
     U = U0[1:m,1:n]
+
+    #U0 is ref of [A b]
+    #U is ref of A
 
     r0 = 0
     r = 0
     i = 1
     j = 1
+    
     while((i<=m)&&(j<=n+1))
         if(U0[i,j] != 0)
             if(j<=n)
@@ -105,10 +85,13 @@ function rankconsistencyTeamID16(A,b)
             j = j + 1
         end
     end
+    
+    #r is rank of A
+    #r0 is rank of [A b]
 
-    r1 = r #rank of A
-    r2 = r0 #rank of [A b]
-    if(r1==r2)
+    U = convert(Array{Int64},U)
+    
+    if(r==r0)
         return U,r,true
     else
         return U,r,false
